@@ -1,0 +1,12 @@
+version: "3.5"
+
+services:
+  app:
+    build: .
+    container_name: app_tavern
+    volumes:
+      - .:/go/src/
+    ports:
+      - 5001:5000
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
