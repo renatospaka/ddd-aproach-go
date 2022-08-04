@@ -1,9 +1,14 @@
 package services
 
 import (
+	"log"
+
 	"github.com/google/uuid"
+	"github.com/renatospaka/tavern/aggregate"
 	"github.com/renatospaka/tavern/domain/customer"
 	"github.com/renatospaka/tavern/domain/customer/memory"
+	"github.com/renatospaka/tavern/domain/product"
+	prodmemory "github.com/renatospaka/tavern/domain/product/memory"
 )
 
 // OrderConfiguration is an alias for a function that will take in a pointer to an OrderService and modify it
@@ -12,6 +17,7 @@ type OrderConfiguration func(os *OrderService) error
 // OrderService is a implementation of the OrderService
 type OrderService struct {
 	customers customer.CustomerRepository
+	products  product.ProductRepository
 }
 
 // NewOrderService takes a variable amount of OrderConfiguration functions and returns a new OrderService
@@ -41,20 +47,50 @@ func WithCustomerRepository(customr customer.CustomerRepository) OrderConfigurat
 
 // WithMemoryCustomerRepository applies a memory customer repository to the OrderService
 func WithMemoryCustomerRepository() OrderConfiguration {
-	// Create the memory repo, if we needed parameters, such as connection strings they could be inputted here
 	customr := memory.New()
 	return WithCustomerRepository(customr)
 }
 
+// WithMemoryProductRepository adds a in memory product repo and adds all input products
+func WithMemoryProductRepository(products []aggregate.Product) OrderConfiguration {
+	return func(os *OrderService) error {
+		// Create the memory repo, if we needed parameters, such as connection strings they could be inputted here
+		pr := prodmemory.New()
+
+		// Add Items to repo
+		for _, p := range products {
+			err := pr.Add(p)
+			if err != nil {
+				return err
+			}
+		}
+		os.products = pr
+		return nil
+	}
+}
+
 // CreateOrder will chaintogether all repositories to create a order for a customer
-func (o *OrderService) CreateOrder(customerID uuid.UUID, productIDs []uuid.UUID) error {
+func (o *OrderService) CreateOrder(customerID uuid.UUID, productIDs []uuid.UUID) (float64, error) {
 	// Get the customer
 	c, err := o.customers.Get(customerID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// Get each Product, Ouchie, We need a ProductRepository
+	var products []aggregate.Product
+	var price float64
+	for _, id := range productIDs {
+		p, err := o.products.GetByID(id)
+		if err != nil {
+			return 0, err
+		}
+		products = append(products, p)
+		price += p.GetPrice()
+	}
 
-	return nil
+	// All Products exists in store, now we can create the order
+	log.Printf("Customer: %s has ordered %d products", c.GetID(), len(products))
+
+	return price, nil
 }
