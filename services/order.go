@@ -1,12 +1,14 @@
 package services
 
 import (
+	"context"
 	"log"
 
 	"github.com/google/uuid"
 	"github.com/renatospaka/tavern/aggregate"
 	"github.com/renatospaka/tavern/domain/customer"
 	"github.com/renatospaka/tavern/domain/customer/memory"
+	"github.com/renatospaka/tavern/domain/customer/mongo"
 	"github.com/renatospaka/tavern/domain/product"
 	prodmemory "github.com/renatospaka/tavern/domain/product/memory"
 )
@@ -65,6 +67,17 @@ func WithMemoryProductRepository(products []aggregate.Product) OrderConfiguratio
 			}
 		}
 		os.products = pr
+		return nil
+	}
+}
+func WithMongoCustomerRepository(connectionString string) OrderConfiguration {
+	return func(os *OrderService) error {
+		// Create the mongo repo, if we needed parameters, such as connection strings they could be inputted here
+		cr, err := mongo.New(context.Background(), connectionString)
+		if err != nil {
+			return err
+		}
+		os.customers = cr
 		return nil
 	}
 }

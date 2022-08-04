@@ -1,8 +1,6 @@
 package entity
 
-import (
-	"github.com/google/uuid"
-)
+import "github.com/google/uuid"
 
 // Person is a entity that represents a person in all Domains
 type Person struct {
