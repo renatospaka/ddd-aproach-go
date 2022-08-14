@@ -1,31 +1,25 @@
-FROM golang:1.18.2-stretch
+FROM golang:1.19.0
 
 ## UPDATE THE OS
 RUN apt-get update && \
-    apt-get install -y tzdata && \
-    go install -v golang.org/x/tools/gopls@latest
-
-WORKDIR /go/src
+    go install -v golang.org/x/tools/gopls@latest && \
+    apt-get install -y tzdata 
 
 ## SET ENVIRONMENT
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 ENV TZ America/Sao_Paulo
 
+## COPY MOD FILES
+WORKDIR /go/src
+COPY go.mod go.sum ./
+
+## VERIFY AND TIDY THE PROJECT
+RUN go mod download && \
+    go mod verify && \
+    go mod tidy
+
 ## COPY NECESSARY FILES
 COPY . .
-
-# ## INSTALL MY STANDARD LIBRARIES 
-# RUN go get github.com/spf13/viper && \
-#     go get github.com/spf13/cobra && \
-#     go get github.com/satori/go.uuid && \
-#     go get github.com/gofiber/fiber/v2 && \
-#     go get github.com/gofiber/jwt/v2 && \
-#     go get github.com/gofiber/jwt/v2 && \
-#     go get github.com/stretchr/testify
-
-## TIDY THE PROJECT
-RUN go mod download && \
-    go mod tidy
 
 ## KEEP THE CONTAINER RUNNiNG
 CMD ["tail", "-f", "/dev/null"]
