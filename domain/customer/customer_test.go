@@ -1,9 +1,9 @@
-package aggregate_test
+package customer_test
 
 import (
 	"testing"
 
-	"github.com/renatospaka/tavern/aggregate"
+	"github.com/renatospaka/tavern/domain/customer"
 )
 
 func TestCustomer_NewCustomer(t *testing.T) {
@@ -18,7 +18,7 @@ func TestCustomer_NewCustomer(t *testing.T) {
 		{
 			test:        "Empty Name validation",
 			name:        "",
-			expectedErr: aggregate.ErrInvalidPerson,
+			expectedErr: customer.ErrInvalidPerson,
 		}, {
 			test:        "Valid Name",
 			name:        "seu Zé",
@@ -29,7 +29,7 @@ func TestCustomer_NewCustomer(t *testing.T) {
 	for _, tc := range testCases {
 		// Run Tests
 		t.Run(tc.test, func(t *testing.T) {
-			_, err := aggregate.NewCustomer(tc.name)
+			_, err := customer.NewCustomer(tc.name)
 
 			if err != tc.expectedErr {
 				t.Errorf("Expected error %v, got %v", tc.expectedErr, err)

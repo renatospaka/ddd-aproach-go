@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"github.com/renatospaka/tavern/aggregate"
+	customerDomain "github.com/renatospaka/tavern/domain/customer"
 )
 
 type MongoRepository struct {
@@ -26,17 +26,17 @@ type mongoCustomer struct {
 }
 
 // NewFromCustomer takes in a aggregate and converts into internal structure
-func NewFromCustomer(c aggregate.Customer) mongoCustomer {
+func NewFromCustomer(c customerDomain.Customer) mongoCustomer {
 	return mongoCustomer{
 		ID:   c.GetID(),
 		Name: c.GetName(),
 	}
 }
 
-// ToAggregate converts into a aggregate.Customer
+// ToAggregate converts into a customerDomain.Customer
 // this could validate all values present etc
-func (m mongoCustomer) ToAggregate() aggregate.Customer {
-	c := aggregate.Customer{}
+func (m mongoCustomer) ToAggregate() customerDomain.Customer {
+	c := customerDomain.Customer{}
 
 	c.SetID(m.ID)
 	c.SetName(m.Name)
@@ -62,7 +62,7 @@ func New(ctx context.Context, connectionString string) (*MongoRepository, error)
 	}, nil
 }
 
-func (mr *MongoRepository) Get(id uuid.UUID) (aggregate.Customer, error) {
+func (mr *MongoRepository) Get(id uuid.UUID) (customerDomain.Customer, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -71,12 +71,12 @@ func (mr *MongoRepository) Get(id uuid.UUID) (aggregate.Customer, error) {
 	var c mongoCustomer
 	err := result.Decode(&c)
 	if err != nil {
-		return aggregate.Customer{}, err
+		return customerDomain.Customer{}, err
 	}
 	return c.ToAggregate(), nil
 }
 
-func (mr *MongoRepository) Add(c aggregate.Customer) error {
+func (mr *MongoRepository) Add(c customerDomain.Customer) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -88,6 +88,6 @@ func (mr *MongoRepository) Add(c aggregate.Customer) error {
 	return nil
 }
 
-func (mr *MongoRepository) Update(c aggregate.Customer) error {
+func (mr *MongoRepository) Update(c customerDomain.Customer) error {
 	panic("to implement")
 }

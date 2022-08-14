@@ -1,11 +1,10 @@
-package aggregate
+package customer
 
 import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/renatospaka/tavern/entity"
-	"github.com/renatospaka/tavern/valueobject"
+	"github.com/renatospaka/tavern"
 )
 
 var (
@@ -17,9 +16,9 @@ var (
 type Customer struct {
 	// person is the root entity of a customer
 	// which means the person.ID is the main identifier for this aggregate
-	person *entity.Person 
-	products []*entity.Item 
-	transactions []valueobject.Transaction 
+	person *tavern.Person 
+	products []*tavern.Item 
+	transactions []tavern.Transaction 
 }
 
 // NewCustomer is a factory to create a new Customer aggregate
@@ -29,15 +28,15 @@ func NewCustomer(name string) (Customer, error) {
 		return Customer{}, ErrInvalidPerson
 	}
 
-	person := &entity.Person{
+	person := &tavern.Person{
 		Name: name,
 		ID:   uuid.New(),
 	}
 
 	return Customer{
 		person:       person,
-		products:     make([]*entity.Item, 0),
-		transactions: make([]valueobject.Transaction, 0),
+		products:     make([]*tavern.Item, 0),
+		transactions: make([]tavern.Transaction, 0),
 	}, nil
 }
 
@@ -49,7 +48,7 @@ func (c *Customer) GetID() uuid.UUID {
 // SetID sets the root ID
 func (c *Customer) SetID(id uuid.UUID) {
 	if c.person == nil {
-		c.person = &entity.Person{}
+		c.person = &tavern.Person{}
 	}
 	c.person.ID = id
 }
@@ -57,7 +56,7 @@ func (c *Customer) SetID(id uuid.UUID) {
 // SetName changes the name of the Customer
 func (c *Customer) SetName(name string) {
 	if c.person == nil {
-		c.person = &entity.Person{}
+		c.person = &tavern.Person{}
 	}
 	c.person.Name = name
 }
